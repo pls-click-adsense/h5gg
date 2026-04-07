@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>h5gg Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { background-color: #222; color: white; font-family: sans-serif; padding: 10px; }
+        .card { border: 1px solid #444; padding: 10px; border-radius: 8px; background: #333; margin-bottom: 10px; }
+        input, select { width: 100%; padding: 8px; margin: 5px 0; border-radius: 4px; border: 1px solid #555; background: #111; color: #fff; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; margin: 5px 0; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-blue { background-color: #007bff; color: white; }
+        .btn-red { background-color: #dc3545; color: white; }
+        .btn-green { background-color: #28a745; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h3>h5gg 拡張ツール</h3>
+    
+    <label>ターゲットアドレス</label>
+    <input type="text" id="address" placeholder="0x12345678">
+    
+    <label>データ型</label>
+    <select id="type">
+        <option value="I32">I32 (int)</option>
+        <option value="I64">I64 (long)</option>
+        <option value="F32">F32 (float)</option>
+        <option value="F64">F64 (double)</option>
+    </select>
+
+    <label>設定値</label>
+    <input type="text" id="value" placeholder="9999">
+
+    <button class="btn-green" onclick="copyAddress()">アドレスをコピー</button>
+    <button class="btn-blue" id="freezeBtn" onclick="toggleFreeze()">固定を開始</button>
+    <button class="btn-red" onclick="stopFreeze()">固定を解除</button>
+</div>
+
+<script>
+let freezeTimer = null;
+
+// アドレスコピー機能
+function copyAddress() {
+    const addr = document.getElementById('address').value;
+    if(!addr) return alert("アドレスを入力してね");
+    
+    // h5gg環境でのクリップボード操作
+    navigator.clipboard.writeText(addr).then(() => {
+        alert("コピー成功: " + addr);
+    }).catch(err => {
+        alert("コピー失敗: " + err);
+    });
+}
+
+// 数値固定（フリーズ）機能
+function toggleFreeze() {
+    const addr = document.getElementById('address').value;
+    const val = document.getElementById('value').value;
+    const type = document.getElementById('type').value;
+
+    if(!addr || !val) return alert("アドレスと値を入力してね");
+
+    if (freezeTimer) clearInterval(freezeTimer);
+
+    // 100msごとに書き込みを実行
+    freezeTimer = setInterval(() => {
+        h5gg.setValue(addr, val, type);
+    }, 100);
+
+    document.getElementById('freezeBtn').innerText = "固定中...";
+    alert("固定を開始したよ");
+}
+
+// 固定解除
+function stopFreeze() {
+    if (freezeTimer) {
+        clearInterval(freezeTimer);
+        freezeTimer = null;
+        document.getElementById('freezeBtn').innerText = "固定を開始";
+        alert("固定を解除したよ");
+    }
+}
+</script>
+
+</body>
+</html>
